@@ -30,6 +30,12 @@ android {
             dirs 'libs'
         }
     }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
 }
 
 dependencies {
@@ -44,5 +50,5 @@ dependencies {
     implementation 'commons-io:commons-io:2.6'
     implementation 'com.google.zxing:core:3.4.1'
     implementation 'com.journeyapps:zxing-android-embedded:4.2.0'
-    compile(name: 'core', ext: 'aar')
+    compile files('libs/ipfs.jar')
 }
