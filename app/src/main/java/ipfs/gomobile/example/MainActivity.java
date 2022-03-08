@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,8 +18,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
 import com.season.myapplication.R;
 
 import java.io.File;
@@ -44,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView ipfsStatus;
     private ProgressBar ipfsProgress;
     private TextView ipfsError;
+    private EditText cidEditText;
 
     private PeerCounter peerCounterUpdater;
 
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         ipfsResult = findViewById(R.id.ipfsResult);
 
         peerCounter = findViewById(R.id.peerCounter);
-
+        cidEditText = findViewById(R.id.edit_cid);
         onlineTitle = findViewById(R.id.onlineTitle);
         offlineTitle = findViewById(R.id.offlineTitle);
         xkcdButton = findViewById(R.id.xkcdButton);
@@ -84,6 +84,13 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
+        }
+
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            //申请WRITE_EXTERNAL_STORAGE权限
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    1);
         }
 
         final MainActivity activity = this;
@@ -112,45 +119,16 @@ public class MainActivity extends AppCompatActivity {
         fetchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(true){
-                    new FetchFile(MainActivity.this, "QmQEFGrGer3ZTwrsB3RSimgwq35hzXbGgcffUMtnq7fcfu").execute();
-                    return;
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    //申请WRITE_EXTERNAL_STORAGE权限
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            1);
+                } else {
+                    new FetchFile(MainActivity.this, cidEditText.getText().toString()).execute();
                 }
-                if(true){
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        //申请WRITE_EXTERNAL_STORAGE权限
-                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                1);
-                    }
-                    return;
-                }//QmTH9kgzFXnzby3THyyBo7swPBh1HSQSec2H8oZWHpVgtG
-
-                IntentIntegrator integrator = new IntentIntegrator(activity);
-                integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-                integrator.setPrompt("Scan a QR code");
-                integrator.setOrientationLocked(false);
-                integrator.setBarcodeImageEnabled(true);
-                integrator.initiateScan();
-                new IntentIntegrator(activity).initiateScan();
             }
         });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // QR Code scan result
-        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (result != null) {
-            if (result.getContents() == null) {
-                Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(this, "Scanned: " + result.getContents(), Toast.LENGTH_LONG).show();
-                new FetchFile(this, result.getContents()).execute();
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
     }
 
     @Override
@@ -206,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         xkcdButton.setVisibility(View.VISIBLE);
         shareButton.setVisibility(View.VISIBLE);
         fetchButton.setVisibility(View.VISIBLE);
+        cidEditText.setVisibility(View.VISIBLE);
 
         peerCounterUpdater = new PeerCounter(this, 10000);
         peerCounterUpdater.start();
@@ -228,18 +207,21 @@ public class MainActivity extends AppCompatActivity {
         shareButton.setClickable(false);
         fetchButton.setAlpha(0.5f);
         fetchButton.setClickable(false);
+        cidEditText.setVisibility(View.INVISIBLE);
     }
 
-    void displayStatusSuccess() {
+    void displayStatusSuccess(String cid) {
         ipfsStatus.setVisibility(View.INVISIBLE);
         ipfsProgress.setVisibility(View.INVISIBLE);
 
+        cidEditText.setText(cid);
         xkcdButton.setAlpha(1);
         xkcdButton.setClickable(true);
         shareButton.setAlpha(1);
         shareButton.setClickable(true);
         fetchButton.setAlpha(1);
         fetchButton.setClickable(true);
+        cidEditText.setVisibility(View.VISIBLE);
     }
 
     void displayStatusError(String title, String error) {
@@ -256,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
         shareButton.setClickable(true);
         fetchButton.setAlpha(1);
         fetchButton.setClickable(true);
+        cidEditText.setVisibility(View.VISIBLE);
     }
 
     static String exceptionToString(Exception error) {

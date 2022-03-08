@@ -65,7 +65,7 @@ final class FetchFile extends AsyncTask<Void, Void, String> {
             activity.displayStatusError(activity.getString(R.string.titleImageFetchingErr), result);
             Log.e(TAG, "Ipfs image fetch error: " + result);
         } else {
-            activity.displayStatusSuccess();
+            activity.displayStatusSuccess(result);
 
             // Put directly data through this way because of size limit with Intend
             DisplayImageActivity.fetchedData = fetchedData;

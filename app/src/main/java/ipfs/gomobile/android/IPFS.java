@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
-import org.apache.commons.io.FilenameUtils;
 import org.json.JSONObject;
 
 // Import gomobile-ipfs core

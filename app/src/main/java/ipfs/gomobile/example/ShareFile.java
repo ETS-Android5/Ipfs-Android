@@ -1,6 +1,5 @@
 package ipfs.gomobile.example;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -10,14 +9,11 @@ import com.season.myapplication.R;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Random;
 
 import ipfs.gomobile.android.IPFS;
 
@@ -45,7 +41,7 @@ final class ShareFile extends AsyncTask<Void, Void, String> {
 
     private void readFile(Uri file) throws Exception {
         MainActivity activity = activityRef.get();
-        if (activity == null || activity.isFinishing()) return ;
+        if (activity == null || activity.isFinishing()) return;
 
         try {
             InputStream is = activity.getContentResolver().openInputStream(file);
@@ -79,7 +75,7 @@ final class ShareFile extends AsyncTask<Void, Void, String> {
         try {
             readFile(fileUri);
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             outputStream.write("--------------------------5f505897199c8c52\r\n".getBytes());
             outputStream.write("Content-Disposition: form-data; name=\"file\"\r\n".getBytes());
             outputStream.write("Content-Type: application/octet-stream\r\n\r\n".getBytes());
@@ -89,9 +85,9 @@ final class ShareFile extends AsyncTask<Void, Void, String> {
             byte body[] = outputStream.toByteArray();
 
             ArrayList<JSONObject> jsonList = ipfs.newRequest("add")
-                .withHeader("Content-Type", "multipart/form-data; boundary=------------------------5f505897199c8c52")
-                .withBody(body)
-                .sendToJSONList();
+                    .withHeader("Content-Type", "multipart/form-data; boundary=------------------------5f505897199c8c52")
+                    .withBody(body)
+                    .sendToJSONList();
 
             String cid = jsonList.get(0).getString("Hash");
             Log.d(TAG, "cid is " + cid);
@@ -110,11 +106,7 @@ final class ShareFile extends AsyncTask<Void, Void, String> {
             activity.displayStatusError(activity.getString(R.string.titleImageSharingErr), result);
             Log.e(TAG, "IPFS add error: " + result);
         } else {
-            activity.displayStatusSuccess();
-
-            Intent intent = new Intent(activity, ShowQRCode.class);
-            intent.putExtra("cid", result);
-            activity.startActivity(intent);
+            activity.displayStatusSuccess(result);
         }
     }
 }

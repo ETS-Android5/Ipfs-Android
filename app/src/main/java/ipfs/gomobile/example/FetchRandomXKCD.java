@@ -92,7 +92,7 @@ final class FetchRandomXKCD extends AsyncTask<Void, Void, String> {
             activity.displayStatusError(activity.getString(R.string.titleXKCDFetchingErr), result);
             Log.e(TAG, "XKCD fetch error: " + result);
         } else {
-            activity.displayStatusSuccess();
+            activity.displayStatusSuccess(result);
 
             // Put directly data through this way because of size limit with Intend
             DisplayImageActivity.fetchedData = fetchedData;
