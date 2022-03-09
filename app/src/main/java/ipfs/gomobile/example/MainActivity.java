@@ -1,7 +1,6 @@
 package ipfs.gomobile.example;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
@@ -21,12 +20,15 @@ import androidx.core.content.ContextCompat;
 import com.season.myapplication.R;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import ipfs.gomobile.android.IPFS;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
     private IPFS ipfs;
 
     private TextView ipfsTitle;
@@ -79,56 +81,50 @@ public class MainActivity extends AppCompatActivity {
                 getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED) {
             new StartIPFS(this).execute();
-        } else if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            Toast.makeText(this, R.string.ble_permissions_explain,
-                    Toast.LENGTH_LONG).show();
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
-        }
-
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            //申请WRITE_EXTERNAL_STORAGE权限
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    1);
         }
 
         final MainActivity activity = this;
 
 
-        xkcdButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new FetchRandomXKCD(activity).execute();
-            }
-        });
+        xkcdButton.setOnClickListener(v -> new FetchRandomXKCD(activity).execute());
 
-        shareButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new ShareFile(activity, Uri.fromFile(new File("sdcard/0.jpg"))).execute();
-                //new FetchFile(MainActivity.this, "sdcard/0.jpg").execute();
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                //startActivityForResult(intent, IntentIntegrator.REQUEST_CODE);
-                // selectFileResultLauncher.launch(new String[] {"image/*"});
-            }
-        });
-
-        fetchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    //申请WRITE_EXTERNAL_STORAGE权限
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            1);
-                } else {
-                    new FetchFile(MainActivity.this, cidEditText.getText().toString()).execute();
+        shareButton.setOnClickListener(v -> {
+            if (true) {
+                try {
+                    String file = copyAssetsTestImage();
+                    new ShareFile(activity, Uri.fromFile(new File(file))).execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, e.getMessage(),
+                            Toast.LENGTH_LONG).show();
                 }
+                return;
             }
         });
+
+        fetchButton.setOnClickListener(v -> new FetchFile(MainActivity.this, cidEditText.getText().toString()).execute());
+    }
+
+    private String copyAssetsTestImage() throws IOException {
+        File file = new File(getCacheDir() + "nft.png");
+        if (file.exists()) {
+            return file.getAbsolutePath();
+        }
+        InputStream myInput;
+        OutputStream myOutput = new FileOutputStream(file.getAbsolutePath());
+        myInput = this.getAssets().open("nft.png");
+        byte[] buffer = new byte[1024];
+        int length = myInput.read(buffer);
+        while (length > 0) {
+            myOutput.write(buffer, 0, length);
+            length = myInput.read(buffer);
+        }
+        myOutput.flush();
+        myInput.close();
+        myOutput.close();
+        return file.getAbsolutePath();
     }
 
     @Override
@@ -138,11 +134,12 @@ public class MainActivity extends AppCompatActivity {
 
         if (grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            new StartIPFS(this).execute();
+            //new StartIPFS(this).execute();
         } else {
             Toast.makeText(this, R.string.ble_permissions_denied,
                     Toast.LENGTH_LONG).show();
         }
+        new StartIPFS(this).execute();
     }
 
     @Override
@@ -251,14 +248,4 @@ public class MainActivity extends AppCompatActivity {
         return string;
     }
 
-    public static String bytesToHex(byte[] bytes) {
-        final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
-        byte[] hexChars = new byte[bytes.length * 2];
-        for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
-        }
-        return new String(hexChars, StandardCharsets.UTF_8);
-    }
 }
