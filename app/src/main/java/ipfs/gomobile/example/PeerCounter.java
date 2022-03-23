@@ -53,7 +53,7 @@ final class PeerCounter {
                 .withOption("direction", false)
                 .sendToJSONList();
 
-            Log.e("TAG-updatePeerCount", jsonList.toString());
+           // Log.e("TAG-updatePeerCount", jsonList.toString());
             JSONArray peerList = jsonList.get(0).getJSONArray("Peers");
             final int count = peerList.length();
 

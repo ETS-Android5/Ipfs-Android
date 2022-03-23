@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,6 +27,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import ipfs.gomobile.android.IPFS;
+import ipfs.gomobile.example.task.FetchFile;
+import ipfs.gomobile.example.task.FetchImage;
+import ipfs.gomobile.example.task.FetchRandomXKCD;
+import ipfs.gomobile.example.task.ShareFile;
+import ipfs.gomobile.example.task.StartIPFS;
 
 public class MainActivity extends AppCompatActivity {
     private IPFS ipfs;
@@ -36,23 +42,21 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView peerCounter;
 
-    private TextView onlineTitle;
-    private TextView offlineTitle;
     private Button xkcdButton;
-    private Button shareButton;
-    private Button fetchButton;
     private TextView ipfsStatus;
     private ProgressBar ipfsProgress;
     private TextView ipfsError;
     private EditText cidEditText;
+    private View startContainer;
+    private Button startButton;
 
     private PeerCounter peerCounterUpdater;
 
-    void setIpfs(IPFS ipfs) {
+    public void setIpfs(IPFS ipfs) {
         this.ipfs = ipfs;
     }
 
-    IPFS getIpfs() {
+    public IPFS getIpfs() {
         return ipfs;
     }
 
@@ -61,59 +65,77 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        startContainer = findViewById(R.id.startVertical);
+        startButton = findViewById(R.id.startButton);
         ipfsTitle = findViewById(R.id.ipfsTitle);
         ipfsStartingProgress = findViewById(R.id.ipfsStartingProgress);
         ipfsResult = findViewById(R.id.ipfsResult);
 
         peerCounter = findViewById(R.id.peerCounter);
         cidEditText = findViewById(R.id.edit_cid);
-        onlineTitle = findViewById(R.id.onlineTitle);
-        offlineTitle = findViewById(R.id.offlineTitle);
         xkcdButton = findViewById(R.id.xkcdButton);
-        shareButton = findViewById(R.id.shareButton);
-        fetchButton = findViewById(R.id.fetchButton);
         ipfsStatus = findViewById(R.id.ipfsStatus);
         ipfsProgress = findViewById(R.id.ipfsProgress);
         ipfsError = findViewById(R.id.ipfsError);
 
-        if (ContextCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED) {
-            new StartIPFS(this).execute();
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
-        }
+        resetStatus();
 
         final MainActivity activity = this;
 
 
-        xkcdButton.setOnClickListener(v -> new FetchRandomXKCD(activity).execute());
+        xkcdButton.setOnClickListener(v -> {
+            new FetchRandomXKCD(activity).execute();
+        });
 
-        shareButton.setOnClickListener(v -> {
-            if (true) {
-                try {
-                    String file = copyAssetsTestImage();
-                    new ShareFile(activity, Uri.fromFile(new File(file))).execute();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(MainActivity.this, e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                }
-                return;
+        findViewById(R.id.sharePicButton).setOnClickListener(v -> {
+            try {
+                String file = copyAssetsTestImage(((EditText) findViewById(R.id.edit_assets)).getText().toString());
+                new ShareFile(activity, Uri.fromFile(new File(file))).execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, e.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
 
-        fetchButton.setOnClickListener(v -> new FetchFile(MainActivity.this, cidEditText.getText().toString()).execute());
+        findViewById(R.id.fetchApkButton).setOnClickListener(v -> {
+            new FetchFile(MainActivity.this, cidEditText.getText().toString()).execute();
+        });
+
+        findViewById(R.id.fetchPicButton).setOnClickListener(v -> {
+            new FetchImage(MainActivity.this, cidEditText.getText().toString()).execute();
+        });
+
+        startButton.setOnClickListener(v -> {
+            ipfsTitle.setVisibility(View.VISIBLE);
+            ipfsStartingProgress.setVisibility(View.VISIBLE);
+            startButton.setVisibility(View.INVISIBLE);
+
+            new StartIPFS(this).execute();
+
+        });
     }
 
-    private String copyAssetsTestImage() throws IOException {
-        File file = new File(getCacheDir() + "nft.png");
+
+    private void resetStatus() {
+        ipfsTitle.setVisibility(View.INVISIBLE);
+        ipfsStartingProgress.setVisibility(View.INVISIBLE);
+        startButton.setVisibility(View.VISIBLE);
+        if (ipfs != null && ipfs.isStarted()) {
+            startContainer.setVisibility(View.GONE);
+        } else {
+            startContainer.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private String copyAssetsTestImage(String name) throws IOException {
+        File file = new File(getCacheDir() + name);
         if (file.exists()) {
             return file.getAbsolutePath();
         }
         InputStream myInput;
         OutputStream myOutput = new FileOutputStream(file.getAbsolutePath());
-        myInput = this.getAssets().open("nft.png");
+        myInput = this.getAssets().open(name);
         byte[] buffer = new byte[1024];
         int length = myInput.read(buffer);
         while (length > 0) {
@@ -124,21 +146,6 @@ public class MainActivity extends AppCompatActivity {
         myInput.close();
         myOutput.close();
         return file.getAbsolutePath();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] strPerm,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, strPerm, grantResults);
-
-        if (grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            //new StartIPFS(this).execute();
-        } else {
-            Toast.makeText(this, R.string.ble_permissions_denied,
-                    Toast.LENGTH_LONG).show();
-        }
-        new StartIPFS(this).execute();
     }
 
     @Override
@@ -159,68 +166,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void displayPeerIDError(String error) {
+    public void displayPeerIDError(String error) {
+        resetStatus();
         ipfsTitle.setTextColor(Color.RED);
         ipfsResult.setTextColor(Color.RED);
 
-        ipfsTitle.setText(getString(R.string.titlePeerIDErr));
+        ipfsTitle.setText("Error:");
         ipfsResult.setText(error);
         ipfsStartingProgress.setVisibility(View.INVISIBLE);
     }
 
-    void displayPeerIDResult(String peerID) {
-        ipfsTitle.setText(getString(R.string.titlePeerID));
+    public void displayPeerIDResult(String peerID) {
+        resetStatus();
+        ipfsTitle.setText("Your Peer ID is:");
         ipfsResult.setText(peerID);
         ipfsStartingProgress.setVisibility(View.INVISIBLE);
 
         updatePeerCount(0);
-        peerCounter.setVisibility(View.VISIBLE);
-        onlineTitle.setVisibility(View.VISIBLE);
-        offlineTitle.setVisibility(View.VISIBLE);
-        xkcdButton.setVisibility(View.VISIBLE);
-        shareButton.setVisibility(View.VISIBLE);
-        fetchButton.setVisibility(View.VISIBLE);
-        cidEditText.setVisibility(View.VISIBLE);
 
         peerCounterUpdater = new PeerCounter(this, 10000);
         peerCounterUpdater.start();
     }
 
-    void updatePeerCount(int count) {
-        peerCounter.setText(getString(R.string.titlePeerCon, count));
+    public void updatePeerCount(int count) {
+        peerCounter.setText("Peers connected: " + count);
     }
 
-    void displayStatusProgress(String text) {
+    public void displayStatusProgress(String text) {
         ipfsStatus.setTextColor(ipfsTitle.getCurrentTextColor());
         ipfsStatus.setText(text);
         ipfsStatus.setVisibility(View.VISIBLE);
         ipfsError.setVisibility(View.INVISIBLE);
         ipfsProgress.setVisibility(View.VISIBLE);
 
-        xkcdButton.setAlpha(0.5f);
-        xkcdButton.setClickable(false);
-        shareButton.setAlpha(0.5f);
-        shareButton.setClickable(false);
-        fetchButton.setAlpha(0.5f);
-        fetchButton.setClickable(false);
-        cidEditText.setVisibility(View.INVISIBLE);
     }
 
-    void displayStatusSuccess(String cid) {
+    public void displayStatusSuccess(String cid) {
         ipfsStatus.setVisibility(View.INVISIBLE);
         ipfsProgress.setVisibility(View.INVISIBLE);
 
-        cidEditText.setText(cid);
-        xkcdButton.setAlpha(1);
-        xkcdButton.setClickable(true);
-        shareButton.setAlpha(1);
-        shareButton.setClickable(true);
-        fetchButton.setAlpha(1);
-        fetchButton.setClickable(true);
-        cidEditText.setVisibility(View.VISIBLE);
+        if (!TextUtils.isEmpty(cid)) {
+            cidEditText.setText(cid);
+        }
     }
 
-    void displayStatusError(String title, String error) {
+    public void displayStatusError(String title, String error) {
         ipfsStatus.setTextColor(Color.RED);
         ipfsStatus.setText(title);
 
@@ -228,16 +218,9 @@ public class MainActivity extends AppCompatActivity {
         ipfsError.setVisibility(View.VISIBLE);
         ipfsError.setText(error);
 
-        xkcdButton.setAlpha(1);
-        xkcdButton.setClickable(true);
-        shareButton.setAlpha(1);
-        shareButton.setClickable(true);
-        fetchButton.setAlpha(1);
-        fetchButton.setClickable(true);
-        cidEditText.setVisibility(View.VISIBLE);
     }
 
-    static String exceptionToString(Exception error) {
+    public static String exceptionToString(Exception error) {
         String string = error.getMessage();
 
         if (error.getCause() != null) {

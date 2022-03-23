@@ -1,32 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/ipfsResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:id="@+id/peerCounter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Peers connected: %1$d"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/xkcdButton"
+            android:layout_width="240dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="Fetch RandomXKCD" />
+
+        <TextView
+            android:id="@+id/ipfsStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/ipfsProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="115dp"
+            android:layout_height="19dp"
+            android:visibility="invisible"
+            android:layout_marginTop="8dp"
+            android:indeterminate="true" />
+
+        <TextView
+            android:id="@+id/ipfsError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_horizontal"
+            android:textColor="#FF0000" />
+
+        <EditText
+            android:id="@+id/edit_assets"
+            android:layout_width="280dp"
+            android:layout_height="48dp"
+            android:text="size0-112.png"
+            android:layout_marginTop="16dp"
+            android:hint="input assets name" />
+
+
+        <Button
+            android:id="@+id/sharePicButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="upload assets" />
+
+        <EditText
+            android:id="@+id/edit_cid"
+            android:layout_width="280dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:hint="input cid" />
+
+
+        <LinearLayout
+            android:id="@+id/linearLayoutFetch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/fetchPicButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:text="download pic" />
+
+            <Button
+                android:id="@+id/fetchApkButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:text="download apk" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/startVertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/ipfsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="100dp"
-            android:text="@string/titleStarting"
-            android:textSize="18sp"
+            android:text="IPFS is starting"
+            android:textSize="24sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:visibility="invisible" />
 
         <ProgressBar
             android:id="@+id/ipfsStartingProgress"
@@ -35,138 +132,17 @@
             android:layout_height="19dp"
             android:layout_marginTop="8dp"
             android:indeterminate="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ipfsTitle" />
-
-        <TextView
-            android:id="@+id/ipfsResult"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center_horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ipfsTitle" />
-
-        <TextView
-            android:id="@+id/peerCounter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:text="@string/titlePeerCon"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ipfsResult" />
+            android:visibility="invisible" />
 
         <Button
-            android:id="@+id/xkcdButton"
+            android:id="@+id/startButton"
             android:layout_width="240dp"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"
-            android:text="@string/xkcdButton"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/onlineTitle" />
+            android:text="Start IPFS" />
 
-        <TextView
-            android:id="@+id/ipfsStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.494"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
-        <ProgressBar
-            android:id="@+id/ipfsProgress"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="115dp"
-            android:layout_height="19dp"
-            android:layout_marginTop="8dp"
-            android:indeterminate="true"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ipfsStatus" />
+    </LinearLayout>
 
-        <TextView
-            android:id="@+id/ipfsError"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="64dp"
-            android:gravity="center_horizontal"
-            android:textColor="#FF0000"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ipfsStatus" />
 
-        <TextView
-            android:id="@+id/offlineTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:text="@string/offlineTitle"
-            android:visibility="invisible"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/xkcdButton" />
-
-        <TextView
-            android:id="@+id/onlineTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="32dp"
-            android:text="@string/onlineTitle"
-            android:visibility="invisible"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/peerCounter" />
-
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/offlineTitle">
-
-            <Button
-                android:id="@+id/shareButton"
-                android:layout_width="240dp"
-                android:layout_height="48dp"
-                android:text="@string/shareButton"
-                android:visibility="invisible" />
-
-            <EditText
-                android:id="@+id/edit_cid"
-                android:layout_width="280dp"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:visibility="invisible" />
-
-            <Button
-                android:id="@+id/fetchButton"
-                android:layout_width="240dp"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:text="@string/fetchButton"
-                android:visibility="invisible" />
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>
